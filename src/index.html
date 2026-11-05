@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f7f4">
-    <meta name="description" content="Explore how regular investments could grow over time.">
-    <title>Investing, made visible</title>
+    <meta name="description" content="Plan your investments, track monthly checks, and build a simple budget from your income.">
+    <title>Goodgrowth — your money plan</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
   <body>
     <main class="page-shell">
       <header class="topbar">
-        <a class="brand" href="#" aria-label="Investing, made visible home">
+        <a class="brand" href="#" aria-label="Goodgrowth home">
           <span class="brand-mark" aria-hidden="true">↗</span>
           <span>goodgrowth<span class="brand-period">.</span></span>
         </a>
@@ -31,11 +31,17 @@
 
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow"><span aria-hidden="true">✳</span> A little growth goes a long way</p>
-        <h1 id="page-title">See where your<br class="mobile-break"> money could take you.</h1>
-        <p class="intro-copy">A simple way to picture your investment journey. Make a few assumptions and watch the years add up.</p>
+        <h1 id="page-title">Make a plan for your<br class="mobile-break"> money.</h1>
+        <p class="intro-copy">Explore your investment journey, keep up with monthly checks, and make a simple budget from your income.</p>
       </section>
 
-      <section class="calculator-layout" aria-label="Investment projection calculator">
+      <nav class="app-tabs" role="tablist" aria-label="Money planning tools">
+        <button class="app-tab" id="projection-tab" type="button" role="tab" aria-selected="true" aria-controls="projection-panel" tabindex="0">Investment plan</button>
+        <button class="app-tab" id="tracker-tab" type="button" role="tab" aria-selected="false" aria-controls="tracker-panel" tabindex="-1">Monthly checks</button>
+        <button class="app-tab" id="budget-tab" type="button" role="tab" aria-selected="false" aria-controls="budget-panel" tabindex="-1">Budget</button>
+      </nav>
+
+      <section class="calculator-layout tab-panel" id="projection-panel" role="tabpanel" aria-labelledby="projection-tab" tabindex="0">
         <aside class="card inputs-card">
           <div class="section-heading">
             <span class="step-number">01</span>
@@ -208,29 +214,64 @@
             </div>
           </section>
 
-          <section class="card tracker-card" aria-labelledby="tracker-title">
-            <div class="tracker-heading">
-              <div class="section-heading">
-                <span class="step-number">04</span>
-                <div>
-                  <h2 id="tracker-title">Monthly investment tracker</h2>
-                  <p>Check off each month when you invest.</p>
-                </div>
-              </div>
-              <div class="tracker-year-picker" aria-label="Choose tracker year">
-                <button class="year-button" id="tracker-previous-year" type="button" aria-label="Show previous year">‹</button>
-                <span id="tracker-year" aria-live="polite"></span>
-                <button class="year-button" id="tracker-next-year" type="button" aria-label="Show next year">›</button>
-              </div>
-            </div>
-            <div class="tracker-summary">
-              <p id="tracker-progress" aria-live="polite">0 of 12 months invested</p>
-              <p>Monthly target <strong id="tracker-target">—</strong></p>
-            </div>
-            <div class="month-grid" id="month-grid" aria-label="Monthly investment checkboxes"></div>
-            <p class="tracker-status" id="tracker-status" role="status" aria-live="polite" hidden></p>
-          </section>
         </div>
+      </section>
+
+      <section class="tab-panel" id="tracker-panel" role="tabpanel" aria-labelledby="tracker-tab" tabindex="0" hidden>
+        <section class="card tracker-card" aria-labelledby="tracker-title">
+          <div class="tracker-heading">
+            <div class="section-heading">
+              <span class="step-number">01</span>
+              <div>
+                <h2 id="tracker-title">Monthly investment checks</h2>
+                <p>Check off each month when you invest.</p>
+              </div>
+            </div>
+            <div class="tracker-year-picker" aria-label="Choose tracker year">
+              <button class="year-button" id="tracker-previous-year" type="button" aria-label="Show previous year">‹</button>
+              <span id="tracker-year" aria-live="polite"></span>
+              <button class="year-button" id="tracker-next-year" type="button" aria-label="Show next year">›</button>
+            </div>
+          </div>
+          <div class="tracker-summary">
+            <p id="tracker-progress" aria-live="polite">0 of 12 months invested</p>
+            <p>Monthly target <strong id="tracker-target">—</strong></p>
+          </div>
+          <div class="month-grid" id="month-grid" aria-label="Monthly investment checkboxes"></div>
+          <p class="tracker-status" id="tracker-status" role="status" aria-live="polite" hidden></p>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="budget-panel" role="tabpanel" aria-labelledby="budget-tab" tabindex="0" hidden>
+        <section class="card budget-card" aria-labelledby="budget-title">
+          <div class="budget-heading">
+            <div class="section-heading">
+              <span class="step-number">01</span>
+              <div>
+                <h2 id="budget-title">A monthly budget that fits your income</h2>
+                <p>Start with a simple 50 / 30 / 20 guideline.</p>
+              </div>
+            </div>
+          </div>
+          <div class="budget-income">
+            <label for="monthly-income">Your monthly take-home income</label>
+            <div class="input-wrap">
+              <span class="input-prefix" aria-hidden="true">₹</span>
+              <input id="monthly-income" name="monthlyIncome" type="number" min="1" step="1000" inputmode="decimal" placeholder="e.g. 80,000" aria-describedby="budget-hint">
+            </div>
+            <p class="field-hint" id="budget-hint">Use the amount you receive after tax. Your income stays in this browser.</p>
+            <p class="budget-storage-status" id="budget-storage-status" role="status" aria-live="polite"></p>
+          </div>
+          <p class="budget-error" id="budget-error" role="alert" hidden></p>
+          <div class="budget-summary" id="budget-summary" aria-live="polite" hidden>
+            <p>Suggested monthly plan for <strong id="budget-income-total"></strong></p>
+            <p>Needs <strong>50%</strong> <span id="budget-needs-total"></span></p>
+            <p>Wants <strong>30%</strong> <span id="budget-wants-total"></span></p>
+            <p>Savings &amp; investing <strong>20%</strong> <span id="budget-future-total"></span></p>
+          </div>
+          <div class="budget-groups" id="budget-breakdown" aria-live="polite"></div>
+          <p class="budget-note">This 50 / 30 / 20 split is a flexible starting point, not financial advice. Adjust the amounts for your costs and priorities.</p>
+        </section>
       </section>
 
       <footer class="disclaimer">

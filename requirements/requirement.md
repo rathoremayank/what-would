@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Build a web app that estimates how an investment may grow over a chosen number of years when the investor enters a monthly investment amount, increases the yearly contribution annually, and earns a fixed assumed annual return. Present the projection as both a table and a graph.
+Build a web app with tabbed tools to estimate how an investment may grow over a chosen number of years, keep month-by-month investment checks, and create a suggested monthly budget from take-home income.
 
 ## User inputs
 
@@ -63,6 +63,15 @@ Inputs must be editable so users can compare different scenarios.
 - Provide clear status feedback if saved tracker data cannot be read or check states cannot be saved.
 - The tracker is a record of whether the user invested; marking a month does not change the projection calculation.
 
+## Monthly budget
+
+- Provide a separate budget tab alongside the investment plan and monthly checks tabs.
+- Let users enter monthly take-home income and show suggested monthly amounts for needs (50%), wants (30%), and savings/investing (20%).
+- Break the suggested amounts into example categories: housing, groceries, transport, utilities, health/debt payments, dining/entertainment, shopping/personal, travel, subscriptions, savings/emergency fund, and investing/retirement.
+- Recalculate all suggested amounts when income changes; reject empty, non-finite, or non-positive income without showing stale calculations.
+- Save valid income in browser storage and restore it when the app is opened again. Keep the last valid saved amount when the current entry is invalid, and report storage errors clearly.
+- Explain that the 50/30/20 allocation is a flexible starting point, not financial advice.
+
 ## Calculation rules
 
 - For projection calculations, the yearly contribution is the starting monthly investment multiplied by 12.
@@ -120,6 +129,7 @@ The graph must make every individual projected year visible, include a marker fo
 ## Usability and accessibility
 
 - Use clear labels and explain that the results are projections, not guaranteed returns.
+- Provide keyboard-accessible tabs for the investment plan, monthly checks, and budget tools.
 - Make the app usable on desktop and mobile screen sizes.
 - Ensure input controls, the table, and graph are accessible by keyboard and have appropriate accessible labels or text alternatives.
 
@@ -137,3 +147,6 @@ The graph must make every individual projected year visible, include a marker fo
 10. The theme toggle switches all app surfaces and the chart between readable light and dark color palettes, and restores the saved selection when possible.
 11. The monthly tracker allows checking and unchecking each month, shows the number of invested months and monthly target, and retains independent checks for different years across reloads.
 12. Valid calculator assumptions are saved automatically and restored on reload; invalid edits do not replace the last valid saved plan.
+13. The investment plan, monthly checks, and budget are independently selectable tabs, including keyboard navigation.
+14. Entering monthly take-home income produces suggested amounts for needs, wants, savings/investing, and each example category using a 50/30/20 split.
+15. Valid budget income is saved and restored; invalid entries are rejected without replacing the last saved amount.

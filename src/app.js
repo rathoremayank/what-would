@@ -33,6 +33,13 @@ const monthGrid = document.querySelector("#month-grid");
 const trackerStatus = document.querySelector("#tracker-status");
 const previousTrackerYear = document.querySelector("#tracker-previous-year");
 const nextTrackerYear = document.querySelector("#tracker-next-year");
+const appTabs = [...document.querySelectorAll('[role="tab"]')];
+const budgetIncomeInput = document.querySelector("#monthly-income");
+const budgetError = document.querySelector("#budget-error");
+const budgetSummary = document.querySelector("#budget-summary");
+const budgetBreakdown = document.querySelector("#budget-breakdown");
+const budgetStorageStatus = document.querySelector("#budget-storage-status");
+const budgetStorageKey = "goodgrowth-monthly-budget-income-v1";
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -52,8 +59,140 @@ const monthNames = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
+const budgetGroups = [
+  {
+    name: "Needs",
+    percent: 50,
+    description: "Essentials to keep life running",
+    categories: [
+      { name: "Housing", percent: 25 },
+      { name: "Groceries", percent: 10 },
+      { name: "Transport", percent: 5 },
+      { name: "Utilities", percent: 5 },
+      { name: "Health & debt payments", percent: 5 },
+    ],
+  },
+  {
+    name: "Wants",
+    percent: 30,
+    description: "Flexible spending and fun",
+    categories: [
+      { name: "Dining & entertainment", percent: 10 },
+      { name: "Shopping & personal", percent: 10 },
+      { name: "Travel", percent: 5 },
+      { name: "Subscriptions", percent: 5 },
+    ],
+  },
+  {
+    name: "Savings & investing",
+    percent: 20,
+    description: "Building your future",
+    categories: [
+      { name: "Savings & emergency fund", percent: 10 },
+      { name: "Investing & retirement", percent: 10 },
+    ],
+  },
+];
 let trackerYear = new Date().getFullYear();
 let trackerYears = {};
+
+function activateTab(tab, moveFocus = false) {
+  for (const candidate of appTabs) {
+    const isActive = candidate === tab;
+    candidate.setAttribute("aria-selected", String(isActive));
+    candidate.tabIndex = isActive ? 0 : -1;
+    document.querySelector(`#${candidate.getAttribute("aria-controls")}`).hidden = !isActive;
+  }
+  if (moveFocus) tab.focus();
+}
+
+function showBudgetStatus(message, isError = false) {
+  budgetStorageStatus.textContent = message;
+  budgetStorageStatus.classList.toggle("budget-storage-status-error", isError);
+}
+
+function renderBudget() {
+  const rawIncome = budgetIncomeInput.value.trim();
+  const income = rawIncome === "" ? Number.NaN : Number(rawIncome);
+  if (!Number.isFinite(income) || income <= 0) {
+    budgetSummary.hidden = true;
+    budgetBreakdown.textContent = "Enter your monthly take-home income to see a suggested split.";
+    budgetError.textContent = rawIncome === "" ? "" : "Enter a monthly income greater than zero.";
+    budgetError.hidden = rawIncome === "";
+    return;
+  }
+
+  budgetError.hidden = true;
+  budgetSummary.hidden = false;
+  document.querySelector("#budget-income-total").textContent = currency.format(income);
+  document.querySelector("#budget-needs-total").textContent = currency.format(income * 0.5);
+  document.querySelector("#budget-wants-total").textContent = currency.format(income * 0.3);
+  document.querySelector("#budget-future-total").textContent = currency.format(income * 0.2);
+
+  const groups = document.createDocumentFragment();
+  for (const group of budgetGroups) {
+    const section = document.createElement("section");
+    section.className = "budget-group";
+    const heading = document.createElement("div");
+    heading.className = "budget-group-heading";
+    const title = document.createElement("div");
+    const name = document.createElement("h3");
+    name.textContent = group.name;
+    const description = document.createElement("p");
+    description.textContent = group.description;
+    title.append(name, description);
+    const total = document.createElement("p");
+    total.className = "budget-group-total";
+    total.textContent = `${group.percent}% · ${currency.format(income * group.percent / 100)}`;
+    heading.append(title, total);
+    section.append(heading);
+
+    for (const category of group.categories) {
+      const row = document.createElement("div");
+      row.className = "budget-category-row";
+      const details = document.createElement("div");
+      details.className = "budget-category-details";
+      const categoryName = document.createElement("span");
+      categoryName.className = "budget-category-name";
+      categoryName.textContent = category.name;
+      const percent = document.createElement("span");
+      percent.className = "budget-category-percent";
+      percent.textContent = `${category.percent}% of income`;
+      details.append(categoryName, percent);
+      const amount = document.createElement("strong");
+      amount.className = "budget-category-amount";
+      amount.textContent = currency.format(income * category.percent / 100);
+      row.append(details, amount);
+      section.append(row);
+    }
+    groups.append(section);
+  }
+  budgetBreakdown.replaceChildren(groups);
+}
+
+function initializeBudget() {
+  try {
+    const savedIncome = localStorage.getItem(budgetStorageKey);
+    if (savedIncome === null) return;
+    const income = Number(savedIncome);
+    if (!Number.isFinite(income) || income <= 0) {
+      showBudgetStatus("Saved budget income is invalid. Enter a new amount to replace it.", true);
+      return;
+    }
+    budgetIncomeInput.value = String(income);
+  } catch {
+    showBudgetStatus("Could not read your saved budget. You can still enter income for this session.", true);
+  }
+}
+
+function saveBudgetIncome(income) {
+  try {
+    localStorage.setItem(budgetStorageKey, String(income));
+    showBudgetStatus("Your income is saved in this browser.");
+  } catch {
+    showBudgetStatus("Could not save your income. Browser storage may be unavailable.", true);
+  }
+}
 
 function applyTheme(theme) {
   const isDark = theme === "dark";
@@ -593,6 +732,21 @@ function updateProjection() {
   renderChart(plan);
 }
 
+for (const [index, tab] of appTabs.entries()) {
+  tab.addEventListener("click", () => activateTab(tab));
+  tab.addEventListener("keydown", (event) => {
+    let nextIndex;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % appTabs.length;
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + appTabs.length) % appTabs.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = appTabs.length - 1;
+    if (nextIndex !== undefined) {
+      event.preventDefault();
+      activateTab(appTabs[nextIndex], true);
+    }
+  });
+}
+
 form.addEventListener("input", updateProjection);
 form.addEventListener("change", updateProjection);
 form.addEventListener("submit", (event) => event.preventDefault());
@@ -616,10 +770,17 @@ nextTrackerYear.addEventListener("click", () => {
     renderTracker();
   }
 });
+budgetIncomeInput.addEventListener("input", () => {
+  renderBudget();
+  const income = Number(budgetIncomeInput.value);
+  if (Number.isFinite(income) && income > 0) saveBudgetIncome(income);
+});
 initializeTheme();
 const planLoadMessage = initializePlan();
 initializeTracker();
+initializeBudget();
 updateProjection();
+renderBudget();
 if (planLoadMessage) {
   showPlanStorageStatus(planLoadMessage, true);
 }
