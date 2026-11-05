@@ -47,12 +47,12 @@
 
           <form id="projection-form" novalidate>
             <div class="field">
-              <label for="starting-investment">Starting yearly investment</label>
+              <label for="starting-monthly-investment">Starting monthly investment</label>
               <div class="input-wrap">
                 <span class="input-prefix" aria-hidden="true">₹</span>
-                <input id="starting-investment" name="startingInvestment" type="number" min="1" step="1000" value="50000" inputmode="decimal" aria-describedby="investment-hint">
+                <input id="starting-monthly-investment" name="startingMonthlyInvestment" type="number" min="1" step="100" value="4166.67" inputmode="decimal" aria-describedby="investment-hint">
               </div>
-              <p class="field-hint" id="investment-hint">Your contribution in the first year</p>
+              <p class="field-hint" id="investment-hint">We calculate the yearly contribution as 12 × this amount</p>
             </div>
 
             <div class="field">

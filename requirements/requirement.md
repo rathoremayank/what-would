@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Build a web app that estimates how an investment may grow over a chosen number of years when the investor contributes a starting amount each year, increases that contribution annually, and earns a fixed assumed annual return. Present the projection as both a table and a graph.
+Build a web app that estimates how an investment may grow over a chosen number of years when the investor enters a monthly investment amount, increases the yearly contribution annually, and earns a fixed assumed annual return. Present the projection as both a table and a graph.
 
 ## User inputs
 
-- **Starting annual investment:** The amount invested in the first year.
+- **Starting monthly investment:** The amount the user plans to invest each month. The app converts this to an annual contribution by multiplying by 12.
 - **Annual investment increase:** Defaults to **10%**. The annual contribution increases by this percentage each year.
 - **Annual return:** Defaults to **10%**.
 - **Investment start year:** The calendar year of the first contribution.
@@ -27,9 +27,9 @@ Inputs must be editable so users can compare different scenarios.
   ```json
   {
     "format": "goodgrowth-investment-projection",
-    "version": 1,
+    "version": 2,
     "assumptions": {
-      "startingInvestment": 50000,
+      "startingMonthlyInvestment": 4166.67,
       "annualIncrease": 10,
       "annualReturn": 10,
       "startYear": 2026,
@@ -39,6 +39,8 @@ Inputs must be editable so users can compare different scenarios.
   }
   ```
 
+- Version 1 files with `startingInvestment` in annual units remain importable; convert their annual amount to a monthly amount by dividing by 12 and rounding to the nearest cent.
+
 ## Appearance
 
 - Provide an accessible toggle between light and dark themes.
@@ -47,15 +49,16 @@ Inputs must be editable so users can compare different scenarios.
 
 ## Calculation rules
 
-- Contributions are made once per year, at the **beginning** of each year.
-- The first year's contribution is the starting annual investment.
+- For projection calculations, the yearly contribution is the starting monthly investment multiplied by 12.
+- Contributions are modeled as one annual contribution, at the **beginning** of each year; monthly payment timing is not modeled separately.
+- The first year's contribution is the converted annual amount.
 - Each following year's contribution is the previous year's contribution multiplied by `1 + annual investment increase`.
 - Each year's contribution earns that year's return.
 - Returns compound annually at the selected fixed annual return.
 - The first contribution occurs in the investment start year at the starting age. Each subsequent contribution is associated with the next calendar year and age.
 - Project one contribution year for each year from the starting age up to, but not including, the wished retirement age.
 - For year `n`:
-  - `contribution[n] = starting annual investment × (1 + annual investment increase)^(n - 1)`
+  - `contribution[n] = starting monthly investment × 12 × (1 + annual investment increase)^(n - 1)`
   - `ending balance[n] = (ending balance[n - 1] + contribution[n]) × (1 + annual return)`
   - The balance before year 1 is zero.
 - This is an estimate based on a constant return. It does not account for fees, taxes, inflation, or variable market performance.
@@ -106,13 +109,13 @@ The graph must make every individual projected year visible, include a marker fo
 
 ## Acceptance criteria
 
-1. A user can enter a starting annual investment, start year, starting age, and wished retirement age, with the investment increase and return defaulting to 10%.
+1. A user can enter a starting monthly investment, start year, starting age, and wished retirement age; the app calculates the annual amount internally, with the investment increase and return defaulting to 10%.
 2. The projection duration is calculated from the difference between retirement age and starting age.
 3. The app calculates the annual contribution increase and compounds each beginning-of-year contribution for that year.
 4. The summary and year-by-year table show consistent contribution and balance values with calendar years and ages.
 5. The graph displays both cumulative contributions and projected balance for every individual year.
 6. Changing a valid input refreshes all results; invalid input is clearly identified and does not leave misleading results visible.
 7. The app communicates the fixed-return assumption and the projection's limitations.
-8. A valid plan can be exported to JSON and imported back with all assumptions and calculated results restored.
+8. A valid plan can be exported to version 2 JSON and imported back with all assumptions and calculated results restored; version 1 annual-investment files remain supported.
 9. Unsupported, malformed, or invalid JSON files are rejected with a clear message without changing the existing plan.
 10. The theme toggle switches all app surfaces and the chart between readable light and dark color palettes, and restores the saved selection when possible.

@@ -1,7 +1,7 @@
 "use strict";
 
 const form = document.querySelector("#projection-form");
-const investmentInput = document.querySelector("#starting-investment");
+const investmentInput = document.querySelector("#starting-monthly-investment");
 const increaseInput = document.querySelector("#annual-increase");
 const returnInput = document.querySelector("#annual-return");
 const startYearInput = document.querySelector("#start-year");
@@ -92,11 +92,11 @@ function clearResults() {
   document.querySelector("#summary").setAttribute("aria-label", "Projection unavailable while inputs are invalid");
 }
 
-function validateValues({ startingInvestment, annualIncrease, annualReturn, startYear, startAge, retirementAge }) {
+function validateValues({ startingMonthlyInvestment, annualIncrease, annualReturn, startYear, startAge, retirementAge }) {
   const duration = retirementAge - startAge;
 
-  if (!Number.isFinite(startingInvestment) || startingInvestment <= 0) {
-    return { error: "Enter a starting yearly investment greater than zero." };
+  if (!Number.isFinite(startingMonthlyInvestment) || startingMonthlyInvestment <= 0) {
+    return { error: "Enter a starting monthly investment greater than zero." };
   }
   if (!Number.isFinite(annualIncrease) || annualIncrease < 0) {
     return { error: "Enter a yearly investment increase of 0% or more." };
@@ -117,7 +117,12 @@ function validateValues({ startingInvestment, annualIncrease, annualReturn, star
     return { error: "This age range or start year creates a projection that is too long to display." };
   }
 
-  const plan = calculateProjection(startingInvestment, annualIncrease / 100, annualReturn / 100, duration, startYear, startAge);
+  const startingYearlyInvestment = startingMonthlyInvestment * 12;
+  if (!Number.isFinite(startingYearlyInvestment)) {
+    return { error: "That monthly investment is too large to calculate. Enter a smaller amount." };
+  }
+
+  const plan = calculateProjection(startingYearlyInvestment, annualIncrease / 100, annualReturn / 100, duration, startYear, startAge);
   if (!plan || plan.some((year) => !Object.values(year).every(Number.isFinite))) {
     return { error: "These values grow beyond the range this calculator can display. Try a lower rate or shorter duration." };
   }
@@ -127,7 +132,7 @@ function validateValues({ startingInvestment, annualIncrease, annualReturn, star
 
 function validateInputs() {
   return validateValues({
-    startingInvestment: readInput(investmentInput),
+    startingMonthlyInvestment: readInput(investmentInput),
     annualIncrease: readInput(increaseInput),
     annualReturn: readInput(returnInput),
     startYear: readInput(startYearInput),
@@ -138,7 +143,7 @@ function validateInputs() {
 
 function getCurrentAssumptions() {
   return {
-    startingInvestment: readInput(investmentInput),
+    startingMonthlyInvestment: readInput(investmentInput),
     annualIncrease: readInput(increaseInput),
     annualReturn: readInput(returnInput),
     startYear: readInput(startYearInput),
@@ -163,7 +168,7 @@ function exportPlan() {
 
   const data = {
     format: "goodgrowth-investment-projection",
-    version: 1,
+    version: 2,
     assumptions,
   };
   const file = new Blob([`${JSON.stringify(data, null, 2)}\n`], { type: "application/json" });
@@ -190,7 +195,7 @@ async function importPlan(file) {
     || typeof data !== "object"
     || Array.isArray(data)
     || data.format !== "goodgrowth-investment-projection"
-    || data.version !== 1
+    || (data.version !== 1 && data.version !== 2)
     || data.assumptions === null
     || typeof data.assumptions !== "object"
     || Array.isArray(data.assumptions)
@@ -200,19 +205,32 @@ async function importPlan(file) {
   }
 
   const assumptions = data.assumptions;
-  const keys = ["startingInvestment", "annualIncrease", "annualReturn", "startYear", "startAge", "retirementAge"];
+  const legacy = data.version === 1;
+  const investmentKey = legacy ? "startingInvestment" : "startingMonthlyInvestment";
+  const keys = [investmentKey, "annualIncrease", "annualReturn", "startYear", "startAge", "retirementAge"];
   if (keys.some((key) => typeof assumptions[key] !== "number" || !Number.isFinite(assumptions[key]))) {
     showDataMessage("The plan file is missing valid numeric assumptions.", true);
     return;
   }
 
-  const validation = validateValues(assumptions);
+  const importedAssumptions = {
+    ...assumptions,
+    startingMonthlyInvestment: legacy
+      ? Math.round((assumptions.startingInvestment / 12) * 100) / 100
+      : assumptions.startingMonthlyInvestment,
+  };
+  if (!Number.isFinite(importedAssumptions.startingMonthlyInvestment)) {
+    showDataMessage("The plan file's investment amount is too large to import.", true);
+    return;
+  }
+
+  const validation = validateValues(importedAssumptions);
   if (validation.error) {
     showDataMessage(`The plan file contains invalid assumptions. ${validation.error}`, true);
     return;
   }
 
-  investmentInput.value = String(assumptions.startingInvestment);
+  investmentInput.value = String(importedAssumptions.startingMonthlyInvestment);
   increaseInput.value = String(assumptions.annualIncrease);
   returnInput.value = String(assumptions.annualReturn);
   startYearInput.value = String(assumptions.startYear);
