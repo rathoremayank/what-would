@@ -206,6 +206,29 @@
               </table>
             </div>
           </section>
+
+          <section class="card tracker-card" aria-labelledby="tracker-title">
+            <div class="tracker-heading">
+              <div class="section-heading">
+                <span class="step-number">04</span>
+                <div>
+                  <h2 id="tracker-title">Monthly investment tracker</h2>
+                  <p>Check off each month when you invest.</p>
+                </div>
+              </div>
+              <div class="tracker-year-picker" aria-label="Choose tracker year">
+                <button class="year-button" id="tracker-previous-year" type="button" aria-label="Show previous year">‹</button>
+                <span id="tracker-year" aria-live="polite"></span>
+                <button class="year-button" id="tracker-next-year" type="button" aria-label="Show next year">›</button>
+              </div>
+            </div>
+            <div class="tracker-summary">
+              <p id="tracker-progress" aria-live="polite">0 of 12 months invested</p>
+              <p>Monthly target <strong id="tracker-target">—</strong></p>
+            </div>
+            <div class="month-grid" id="month-grid" aria-label="Monthly investment checkboxes"></div>
+            <p class="tracker-status" id="tracker-status" role="status" aria-live="polite" hidden></p>
+          </section>
         </div>
       </section>
 

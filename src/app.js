@@ -25,6 +25,13 @@ const investmentGrowthOutput = document.querySelector("#investment-growth");
 const projectionRows = document.querySelector("#projection-rows");
 const chart = document.querySelector("#projection-chart");
 const chartDescription = document.querySelector("#chart-description");
+const trackerYearOutput = document.querySelector("#tracker-year");
+const trackerProgress = document.querySelector("#tracker-progress");
+const trackerTarget = document.querySelector("#tracker-target");
+const monthGrid = document.querySelector("#month-grid");
+const trackerStatus = document.querySelector("#tracker-status");
+const previousTrackerYear = document.querySelector("#tracker-previous-year");
+const nextTrackerYear = document.querySelector("#tracker-next-year");
 
 const currency = new Intl.NumberFormat("en-IN", {
   style: "currency",
@@ -38,6 +45,13 @@ const compactCurrency = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 1,
 });
 const svgNamespace = "http://www.w3.org/2000/svg";
+const trackerStorageKey = "goodgrowth-monthly-investment-tracker-v1";
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+let trackerYear = new Date().getFullYear();
+let trackerYears = {};
 
 function applyTheme(theme) {
   const isDark = theme === "dark";
@@ -77,6 +91,99 @@ function toggleTheme() {
 function readInput(input) {
   const value = input.value.trim();
   return value === "" ? Number.NaN : Number(value);
+}
+
+function showTrackerStatus(message, isError = false) {
+  trackerStatus.textContent = message;
+  trackerStatus.classList.toggle("tracker-status-error", isError);
+  trackerStatus.hidden = false;
+}
+
+function isValidTrackerData(data) {
+  if (data === null || typeof data !== "object" || Array.isArray(data) || data.version !== 1) return false;
+  if (data.years === null || typeof data.years !== "object" || Array.isArray(data.years)) return false;
+  return Object.entries(data.years).every(([year, months]) =>
+    /^\d{4}$/.test(year)
+    && Number(year) >= 1900
+    && Number(year) <= 9999
+    && Array.isArray(months)
+    && months.length === 12
+    && months.every((checked) => typeof checked === "boolean"),
+  );
+}
+
+function initializeTracker() {
+  try {
+    const saved = localStorage.getItem(trackerStorageKey);
+    if (saved === null) return;
+    const data = JSON.parse(saved);
+    if (!isValidTrackerData(data)) {
+      showTrackerStatus("Saved tracker data is invalid. New checks will be saved over it.", true);
+      return;
+    }
+    trackerYears = data.years;
+  } catch {
+    showTrackerStatus("Could not read saved tracker data. Checks may only last for this session.", true);
+  }
+}
+
+function saveTracker() {
+  try {
+    localStorage.setItem(trackerStorageKey, JSON.stringify({ version: 1, years: trackerYears }));
+    trackerStatus.hidden = true;
+  } catch {
+    showTrackerStatus("Could not save your checks in this browser. They may not persist after you leave.", true);
+  }
+}
+
+function getCheckedMonths(year) {
+  return trackerYears[year] || Array(12).fill(false);
+}
+
+function updateTrackerSummary() {
+  const checkedCount = getCheckedMonths(trackerYear).filter(Boolean).length;
+  trackerProgress.textContent = `${checkedCount} of 12 ${checkedCount === 1 ? "month" : "months"} invested`;
+  const monthlyInvestment = readInput(investmentInput);
+  trackerTarget.textContent = Number.isFinite(monthlyInvestment) && monthlyInvestment > 0
+    ? currency.format(monthlyInvestment)
+    : "—";
+}
+
+function renderTracker() {
+  trackerYearOutput.textContent = String(trackerYear);
+  previousTrackerYear.disabled = trackerYear <= 1900;
+  nextTrackerYear.disabled = trackerYear >= 9999;
+  const checkedMonths = getCheckedMonths(trackerYear);
+  updateTrackerSummary();
+
+  const items = document.createDocumentFragment();
+  for (const [index, month] of monthNames.entries()) {
+    const label = document.createElement("label");
+    label.className = "month-item";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = checkedMonths[index];
+    checkbox.setAttribute("aria-label", `${month} ${trackerYear}: mark monthly investment as invested`);
+    checkbox.addEventListener("change", () => {
+      const yearChecks = [...getCheckedMonths(trackerYear)];
+      yearChecks[index] = checkbox.checked;
+      trackerYears[trackerYear] = yearChecks;
+      saveTracker();
+      status.textContent = checkbox.checked ? "Invested" : "Not yet";
+      status.classList.toggle("is-invested", checkbox.checked);
+      updateTrackerSummary();
+    });
+
+    const monthName = document.createElement("span");
+    monthName.className = "month-name";
+    monthName.textContent = month;
+    const status = document.createElement("span");
+    status.className = checkbox.checked ? "month-status is-invested" : "month-status";
+    status.textContent = checkbox.checked ? "Invested" : "Not yet";
+    label.append(checkbox, monthName, status);
+    items.append(label);
+  }
+  monthGrid.replaceChildren(items);
 }
 
 function clearResults() {
@@ -401,6 +508,7 @@ function renderTable(plan) {
 }
 
 function updateProjection() {
+  renderTracker();
   const startAge = readInput(startAgeInput);
   const retirementAge = readInput(retirementAgeInput);
   durationInput.value = Number.isInteger(startAge) && Number.isInteger(retirementAge) && retirementAge > startAge
@@ -441,5 +549,18 @@ importFileInput.addEventListener("change", async () => {
   if (file) await importPlan(file);
   importFileInput.value = "";
 });
+previousTrackerYear.addEventListener("click", () => {
+  if (trackerYear > 1900) {
+    trackerYear -= 1;
+    renderTracker();
+  }
+});
+nextTrackerYear.addEventListener("click", () => {
+  if (trackerYear < 9999) {
+    trackerYear += 1;
+    renderTracker();
+  }
+});
 initializeTheme();
+initializeTracker();
 updateProjection();

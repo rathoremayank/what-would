@@ -47,6 +47,14 @@ Inputs must be editable so users can compare different scenarios.
 - Apply the selected theme consistently to the page, controls, cards, chart, table, and supporting text.
 - Save the user's theme preference in the browser and restore it on the next visit when storage is available.
 
+## Monthly investment tracker
+
+- Show a month-by-month checklist for a selectable calendar year, defaulting to the current year.
+- Each month can be marked invested or not invested, and the tracker shows the monthly investment target from the current input and how many months are checked.
+- Save check states in browser storage by calendar year so they remain available after reload and do not overwrite other years.
+- Provide clear status feedback if saved tracker data cannot be read or check states cannot be saved.
+- The tracker is a record of whether the user invested; marking a month does not change the projection calculation.
+
 ## Calculation rules
 
 - For projection calculations, the yearly contribution is the starting monthly investment multiplied by 12.
@@ -119,3 +127,4 @@ The graph must make every individual projected year visible, include a marker fo
 8. A valid plan can be exported to version 2 JSON and imported back with all assumptions and calculated results restored; version 1 annual-investment files remain supported.
 9. Unsupported, malformed, or invalid JSON files are rejected with a clear message without changing the existing plan.
 10. The theme toggle switches all app surfaces and the chart between readable light and dark color palettes, and restores the saved selection when possible.
+11. The monthly tracker allows checking and unchecking each month, shows the number of invested months and monthly target, and retains independent checks for different years across reloads.
