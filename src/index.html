@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f4">
+    <meta name="description" content="Explore how regular investments could grow over time.">
+    <title>Investing, made visible</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Investing, made visible home">
+          <span class="brand-mark" aria-hidden="true">↗</span>
+          <span>goodgrowth<span class="brand-period">.</span></span>
+        </a>
+        <div class="topbar-actions">
+          <span class="topbar-note"><span class="status-dot" aria-hidden="true"></span> Your future, in focus</span>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+            <span class="theme-icon" id="theme-icon" aria-hidden="true">☾</span>
+            <span id="theme-label">Dark mode</span>
+          </button>
+          <span class="theme-status" id="theme-status" role="status" aria-live="polite" hidden></span>
+        </div>
+      </header>
+
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow"><span aria-hidden="true">✳</span> A little growth goes a long way</p>
+        <h1 id="page-title">See where your<br class="mobile-break"> money could take you.</h1>
+        <p class="intro-copy">A simple way to picture your investment journey. Make a few assumptions and watch the years add up.</p>
+      </section>
+
+      <section class="calculator-layout" aria-label="Investment projection calculator">
+        <aside class="card inputs-card">
+          <div class="section-heading">
+            <span class="step-number">01</span>
+            <div>
+              <h2>Your plan</h2>
+              <p>Small steps, steady progress.</p>
+            </div>
+          </div>
+
+          <form id="projection-form" novalidate>
+            <div class="field">
+              <label for="starting-investment">Starting yearly investment</label>
+              <div class="input-wrap">
+                <span class="input-prefix" aria-hidden="true">₹</span>
+                <input id="starting-investment" name="startingInvestment" type="number" min="1" step="1000" value="50000" inputmode="decimal" aria-describedby="investment-hint">
+              </div>
+              <p class="field-hint" id="investment-hint">Your contribution in the first year</p>
+            </div>
+
+            <div class="field">
+              <label for="annual-increase">Yearly investment increase</label>
+              <div class="input-wrap">
+                <input id="annual-increase" name="annualIncrease" type="number" min="0" step="0.5" value="10" inputmode="decimal" aria-describedby="increase-hint">
+                <span class="input-suffix" aria-hidden="true">%</span>
+              </div>
+              <p class="field-hint" id="increase-hint">How much more you invest each year</p>
+            </div>
+
+            <div class="field">
+              <label for="annual-return">Expected annual return</label>
+              <div class="input-wrap">
+                <input id="annual-return" name="annualReturn" type="number" min="-99.99" step="0.5" value="10" inputmode="decimal" aria-describedby="return-hint">
+                <span class="input-suffix" aria-hidden="true">%</span>
+              </div>
+              <p class="field-hint" id="return-hint">A steady rate used for this estimate</p>
+            </div>
+
+            <div class="field">
+              <label for="start-year">Investment start year</label>
+              <div class="input-wrap">
+                <input id="start-year" name="startYear" type="number" min="1900" max="9999" step="1" value="2026" inputmode="numeric" aria-describedby="start-year-hint">
+              </div>
+              <p class="field-hint" id="start-year-hint">The calendar year your first investment is made</p>
+            </div>
+
+            <div class="field">
+              <label for="start-age">Your age when investing starts</label>
+              <div class="input-wrap">
+                <input id="start-age" name="startAge" type="number" min="0" max="99" step="1" value="30" inputmode="numeric" aria-describedby="start-age-hint">
+                <span class="input-suffix word-suffix">years old</span>
+              </div>
+              <p class="field-hint" id="start-age-hint">Your age in the investment start year</p>
+            </div>
+
+            <div class="field">
+              <label for="retirement-age">Wished retirement age</label>
+              <div class="input-wrap">
+                <input id="retirement-age" name="retirementAge" type="number" min="1" max="100" step="1" value="60" inputmode="numeric" aria-describedby="retirement-age-hint">
+                <span class="input-suffix word-suffix">years old</span>
+              </div>
+              <p class="field-hint" id="retirement-age-hint">Projection runs until this age</p>
+            </div>
+
+            <div class="field">
+              <label for="duration">Years until retirement</label>
+              <div class="input-wrap">
+                <input id="duration" name="duration" type="number" value="30" readonly aria-describedby="duration-hint">
+                <span class="input-suffix word-suffix">years</span>
+              </div>
+              <p class="field-hint" id="duration-hint">Calculated from your start and retirement ages</p>
+            </div>
+            <p class="error-message" id="form-error" role="alert" hidden></p>
+          </form>
+
+          <div class="data-actions" aria-label="Import or export plan data">
+            <button class="data-button" id="export-plan" type="button">
+              <span aria-hidden="true">↓</span> Export plan
+            </button>
+            <button class="data-button" id="import-plan" type="button">
+              <span aria-hidden="true">↑</span> Import plan
+            </button>
+            <input id="import-file" type="file" accept=".json,application/json" hidden>
+          </div>
+          <p class="data-message" id="data-message" role="status" aria-live="polite" hidden></p>
+
+          <div class="assumption-note">
+            <span class="note-icon" aria-hidden="true">✳</span>
+            <p>Each year's contribution is invested at the start of the year and grows at your expected return.</p>
+          </div>
+        </aside>
+
+        <div class="results-column">
+          <section class="card overview-card" aria-labelledby="overview-title">
+            <div class="results-heading">
+              <div class="section-heading">
+                <span class="step-number">02</span>
+                <div>
+                  <h2 id="overview-title">The big picture</h2>
+                  <p id="projection-period">Your estimated outcome, year by year.</p>
+                </div>
+              </div>
+              <span class="projection-badge"><span aria-hidden="true">✦</span> Projection</span>
+            </div>
+
+            <div class="summary-grid" id="summary" aria-live="polite">
+              <article class="summary-card balance-card">
+                <p class="summary-label">Projected value</p>
+                <p class="summary-value" id="ending-balance">—</p>
+                <p class="summary-caption" id="ending-caption">At the end of 20 years</p>
+                <span class="balance-decoration" aria-hidden="true">↗</span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-icon contributions-icon" aria-hidden="true">↗</span>
+                <p class="summary-label">Total invested</p>
+                <p class="summary-value" id="total-contributions">—</p>
+                <p class="summary-caption">Your contributions over time</p>
+              </article>
+              <article class="summary-card">
+                <span class="summary-icon growth-icon" aria-hidden="true">✳</span>
+                <p class="summary-label">Estimated growth</p>
+                <p class="summary-value" id="investment-growth">—</p>
+                <p class="summary-caption">Growth beyond your contributions</p>
+              </article>
+            </div>
+
+            <div class="chart-section">
+              <div class="chart-heading">
+                <div>
+                  <h3>Your money over the years</h3>
+                  <p>See your contributions grow into a bigger picture.</p>
+                </div>
+                <div class="chart-legend" aria-label="Chart legend">
+                  <span><i class="legend-dot invested-dot" aria-hidden="true"></i> Invested</span>
+                  <span><i class="legend-dot value-dot" aria-hidden="true"></i> Projected value</span>
+                </div>
+              </div>
+              <div class="chart-wrap" id="chart-container">
+                <svg id="projection-chart" viewBox="0 0 760 280" role="img" aria-labelledby="chart-title chart-description"></svg>
+                <p class="chart-description" id="chart-description"></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="card table-card" aria-labelledby="table-title">
+            <div class="table-heading">
+              <div class="section-heading">
+                <span class="step-number">03</span>
+                <div>
+                  <h2 id="table-title">The year-by-year</h2>
+                  <p>A closer look at each step of the journey.</p>
+                </div>
+              </div>
+              <span class="table-unit">All amounts in ₹ INR</span>
+            </div>
+            <div class="table-scroll" tabindex="0" aria-label="Scrollable year-by-year investment projection table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Calendar year</th>
+                    <th scope="col">Age</th>
+                    <th scope="col">This year's investment</th>
+                    <th scope="col">Total invested</th>
+                    <th scope="col">Projected value</th>
+                    <th scope="col">Estimated growth</th>
+                  </tr>
+                </thead>
+                <tbody id="projection-rows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <footer class="disclaimer">
+        <span class="disclaimer-icon" aria-hidden="true">i</span>
+        <p><strong>A note on projections</strong> &nbsp;This is an illustration, not a promise. Actual returns vary over time. This estimate assumes a fixed annual return and excludes taxes, fees, and inflation.</p>
+      </footer>
+    </main>
+  </body>
+</html>
