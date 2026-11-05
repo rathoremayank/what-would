@@ -16,6 +16,14 @@ Build a web app that estimates how an investment may grow over a chosen number o
 
 Inputs must be editable so users can compare different scenarios.
 
+## Browser storage
+
+- Automatically save the current valid calculator assumptions in browser storage when they change.
+- Restore the saved assumptions when the app is opened again.
+- Keep the last valid saved plan if a user temporarily enters invalid values; invalid input must not overwrite saved data.
+- Show a clear status when the plan has been saved or browser storage cannot be read or written.
+- Keep the monthly tracker checks saved independently by year.
+
 ## Import and export
 
 - Users can export the current valid plan assumptions to a downloadable JSON file.
@@ -128,3 +136,4 @@ The graph must make every individual projected year visible, include a marker fo
 9. Unsupported, malformed, or invalid JSON files are rejected with a clear message without changing the existing plan.
 10. The theme toggle switches all app surfaces and the chart between readable light and dark color palettes, and restores the saved selection when possible.
 11. The monthly tracker allows checking and unchecking each month, shows the number of invested months and monthly target, and retains independent checks for different years across reloads.
+12. Valid calculator assumptions are saved automatically and restored on reload; invalid edits do not replace the last valid saved plan.

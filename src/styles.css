@@ -356,6 +356,17 @@ h1 {
   margin: 2px 0 0;
 }
 
+.plan-storage-status {
+  margin: 0 0 9px;
+  color: var(--field-hint);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.plan-storage-status-error {
+  color: #b44237;
+}
+
 .data-button {
   display: inline-flex;
   min-height: 34px;

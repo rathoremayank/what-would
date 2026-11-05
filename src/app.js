@@ -13,6 +13,7 @@ const exportButton = document.querySelector("#export-plan");
 const importButton = document.querySelector("#import-plan");
 const importFileInput = document.querySelector("#import-file");
 const dataMessage = document.querySelector("#data-message");
+const planStorageStatus = document.querySelector("#plan-storage-status");
 const themeToggle = document.querySelector("#theme-toggle");
 const themeIcon = document.querySelector("#theme-icon");
 const themeLabel = document.querySelector("#theme-label");
@@ -45,6 +46,7 @@ const compactCurrency = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 1,
 });
 const svgNamespace = "http://www.w3.org/2000/svg";
+const planStorageKey = "goodgrowth-investment-plan-v1";
 const trackerStorageKey = "goodgrowth-monthly-investment-tracker-v1";
 const monthNames = [
   "January", "February", "March", "April", "May", "June",
@@ -246,6 +248,58 @@ function validateInputs() {
     startAge: readInput(startAgeInput),
     retirementAge: readInput(retirementAgeInput),
   });
+}
+
+function showPlanStorageStatus(message, isError = false) {
+  planStorageStatus.textContent = message;
+  planStorageStatus.classList.toggle("plan-storage-status-error", isError);
+}
+
+function initializePlan() {
+  try {
+    const saved = localStorage.getItem(planStorageKey);
+    if (saved === null) return "";
+
+    const data = JSON.parse(saved);
+    const keys = ["startingMonthlyInvestment", "annualIncrease", "annualReturn", "startYear", "startAge", "retirementAge"];
+    if (
+      data === null
+      || typeof data !== "object"
+      || Array.isArray(data)
+      || data.version !== 1
+      || data.assumptions === null
+      || typeof data.assumptions !== "object"
+      || Array.isArray(data.assumptions)
+      || keys.some((key) => typeof data.assumptions[key] !== "number" || !Number.isFinite(data.assumptions[key]))
+    ) {
+      return "Saved plan data is invalid. The current plan will be saved instead.";
+    }
+
+    const validation = validateValues(data.assumptions);
+    if (validation.error) return "Saved plan data is invalid. The current plan will be saved instead.";
+
+    investmentInput.value = String(data.assumptions.startingMonthlyInvestment);
+    increaseInput.value = String(data.assumptions.annualIncrease);
+    returnInput.value = String(data.assumptions.annualReturn);
+    startYearInput.value = String(data.assumptions.startYear);
+    startAgeInput.value = String(data.assumptions.startAge);
+    retirementAgeInput.value = String(data.assumptions.retirementAge);
+    return "";
+  } catch {
+    return "Could not read the saved plan. Browser storage may be unavailable.";
+  }
+}
+
+function saveCurrentPlan() {
+  try {
+    localStorage.setItem(planStorageKey, JSON.stringify({
+      version: 1,
+      assumptions: getCurrentAssumptions(),
+    }));
+    showPlanStorageStatus("Your plan is saved in this browser.");
+  } catch {
+    showPlanStorageStatus("Could not save your plan. Browser storage may be unavailable.", true);
+  }
 }
 
 function getCurrentAssumptions() {
@@ -523,6 +577,7 @@ function updateProjection() {
     return;
   }
 
+  saveCurrentPlan();
   errorMessage.hidden = true;
   const plan = result.plan;
   const finalYear = plan[plan.length - 1];
@@ -562,5 +617,9 @@ nextTrackerYear.addEventListener("click", () => {
   }
 });
 initializeTheme();
+const planLoadMessage = initializePlan();
 initializeTracker();
 updateProjection();
+if (planLoadMessage) {
+  showPlanStorageStatus(planLoadMessage, true);
+}
